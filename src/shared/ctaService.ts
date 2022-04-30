@@ -50,5 +50,5 @@ export const getPredictions = (options: Partial<ServiceOptions>) => {
   const formatter: ServiceFormatter<IPrediction, Prediction> = (prds) => ([...(prds ?? [])]
     .map(prd => new Prediction(prd)));
   const opts: ServiceOptions<IPrediction, Prediction> = { ...options, resource, params, plucker, formatter };
-  return getData(opts);
+  return getData(opts) as Promise<Prediction[]>;
 };

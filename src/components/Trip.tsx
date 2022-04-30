@@ -12,10 +12,7 @@ export default function Trip(props: TripProps) {
 
   useEffect(() => {
     const params: CTAParams = { stpid: '11027,15021,18329' };
-    getPredictions({ params }).then((resp: Prediction[]|any) => {
-      const tGuard = (x: any) => x instanceof Prediction;
-      if (!(Array.isArray(resp) && resp.some(tGuard))) return;
-      const next = resp.filter(tGuard);
+    getPredictions({ params }).then((next) => {
       setPredictions(next);
       setMessage(`Found ${next.length} predictions`)
     });
