@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { BustimeResponse, CTAResponse, Prediction } from '../models';
+import { Prediction } from '../models';
+import { CTAParams, getPredictions } from '../shared/ctaService';
 
 export interface TripProps {
   [key: string]: any;
@@ -10,17 +11,14 @@ export default function Trip(props: TripProps) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
 
   useEffect(() => {
-    const baseUrl: string = `${process.env.REACT_APP_API_BASE_URL}`;
-    const requestOptions = { method: 'GET' };
-    const endpoint = new URL(`${baseUrl}/getpredictions`);
-    endpoint.searchParams.append('stpid', '11027,15021,18329');
-    fetch(endpoint.href, requestOptions)
-      .then(response => response.json() as CTAResponse)
-      .then((result) => result['bustime-response'])
-      .then((btr) => ({ prd: [], ...btr } as BustimeResponse))
-      .then(({ prd: prds }) => ([...(prds ?? [])].map(prd => new Prediction(prd))))
-      .then(setPredictions)
-      .catch(error => console.error('error', error));
+    const params: CTAParams = { stpid: '11027,15021,18329' };
+    getPredictions({ params }).then((resp: Prediction[]|any) => {
+      const tGuard = (x: any) => x instanceof Prediction;
+      if (!(Array.isArray(resp) && resp.some(tGuard))) return;
+      const next = resp.filter(tGuard);
+      setPredictions(next);
+      setMessage(`Found ${next.length} predictions`)
+    });
   }, []);
 
   return (
@@ -29,7 +27,7 @@ export default function Trip(props: TripProps) {
       {predictions.map((prd, idx) => (
         <div key={`prd-${idx}`}>
           <h2>{prd.stopName}</h2>
-          <p>{prd.timeStamp?.toTimeString()}</p>
+          <p>{`${prd.timeStamp}`}</p>
         </div>
       ))}
     </main>

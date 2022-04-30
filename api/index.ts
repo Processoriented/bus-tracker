@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { config } from 'dotenv';
 import cors from 'cors';
@@ -11,6 +11,13 @@ const PORT = 8000;
 const app = express();
 
 app.use(cors());
+
+const errHandler: ErrorRequestHandler = (err, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+};
+
+app.use(errHandler);
 
 app.get('/', (req: Request, res: Response) => {
   res.send(`Hello ${req?.query?.name ?? 'World'}.`);
@@ -29,6 +36,8 @@ const hpmOptions: Options = {
   },
 };
 
-app.get('/api/*', createProxyMiddleware(hpmOptions));
+const hpm = createProxyMiddleware(hpmOptions);
+
+app.get('/api/*', hpm);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
