@@ -12,6 +12,9 @@ node_modules
 /build
 dist
 
+# TODO: Use express to update and cache static files
+api/src/static
+
 # misc
 .DS_Store
 .env.local

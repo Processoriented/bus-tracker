@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ChangeEventHandler, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 import { Pattern, Point, Prediction } from '../models';
 import { CTAParams, getPatterns, getPredictions } from '../shared/ctaService';
 
@@ -50,11 +50,26 @@ export default function Route(props: RouteProps) {
     if (!(selectedPattern && start && end)) return;
     const stpid = [start.stopId, end.stopId].join(',');
     const params: CTAParams = { stpid };
-    getPredictions({ params }).then((next) => {
-      console.log({next});
-      setPredictions(next);
-    });
+    getPredictions({ params }).then(setPredictions);
   }, [selectedPattern, start, end]);
+
+  const tableData = useMemo(() => {
+    if (!(start && end && selectedPattern && Array.isArray(predictions) && predictions.length)) return [];
+    const stopIds = { start: start.stopId, end: end.stopId };
+    const startPrds = predictions.filter(({ stopId }) => stopId === stopIds.start);
+    const startVehicles = startPrds.map(({ vehicleId }) => vehicleId);
+    const endPrds = predictions.filter(({ stopId }) => stopId === stopIds.end)
+      .filter(({ vehicleId }) => startVehicles.includes(vehicleId));
+    const sRow = startPrds.reduce(
+      (p, d) => ({ ...p, [`${rt}:${d.vehicleId}`]: d.time }), { stop: start.stopName });
+    const rowObj = Object.keys(sRow).reduce((p, k) => ({ ...p, [k]: null }), { stop: null });
+    const eRowObj = { ...rowObj, stop: end.stopName };
+    const rows = selectedPattern.getStopsBetween(start.sequence, end.sequence)
+      .map(({ stopName }) => stopName).map((stop) => ({ ...rowObj, stop }));
+    const eRow = endPrds.filter((d) => Object.keys(eRowObj).includes(`${rt}:${d.vehicleId}`)).reduce(
+      (p, d) => ({ ...p, [`${rt}:${d.vehicleId}`]: d.time }), eRowObj);
+    return [sRow, ...rows, eRow];
+  }, [start, end, selectedPattern, predictions, rt])
 
   return (
     <main>
@@ -67,7 +82,7 @@ export default function Route(props: RouteProps) {
             <option key="dir-zero" value="-2"></option>
             {patterns.map((ptr) => (
               <option key={`${ptr.patternId}`} value={ptr.patternId}>
-                {`Route ${rt} (${ptr.direction})`}
+                {`Route ${rt} (${ptr.direction}: ${ptr.firstStop?.stopName} - ${ptr.lastStop?.stopName})`}
               </option>))}
           </select>
         </div>
@@ -92,12 +107,21 @@ export default function Route(props: RouteProps) {
           </select>
         </div>}
       </form>
-      {(!(start && end && selectedPattern)) ? null : <div>
-        <ul>
-          {selectedPattern.getSubRouteStops(start.sequence, end.sequence).map((p) =>(
-            <li key={`sr${p.stopId}`}>{p.stopName}</li>
-          ))}
-        </ul>
+      {(!(start && end && selectedPattern && tableData?.length)) ? null : <div>
+        <table>
+          <thead><tr>
+            {Object.keys(tableData[0]).map((h, i) => (
+              <th key={`th${i}`}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {tableData.map((row, idx) => (
+              <tr key={`tr${idx}`}>
+                {Object.values(row).map((x, i) => (<td key={`td${i}`}>{x}</td>))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>}
     </main>
   );

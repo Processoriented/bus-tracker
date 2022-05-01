@@ -86,4 +86,5 @@ export class Prediction {
   get tripId() { return this.tatripid; }
   get countdown() { return this.prdctdn; }
   get zone() { return this._zone; }
+  get time() { return this.prdtm.slice(-5); }
 }

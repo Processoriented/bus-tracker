@@ -3,7 +3,7 @@ import { IPrediction } from './prediction';
 
 
 export interface BustimeResponse {
-  error?: string,
+  error?: any,
   prd?: IPrediction[],
   ptr?: IPattern[],
 }

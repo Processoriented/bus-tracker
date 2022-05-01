@@ -1,7 +1,7 @@
 import { CTAResponse, BustimeResponse, IPrediction, Prediction, IPattern, Pattern } from '../models';
 
 
-export type ServicePlucker<T = any> = ((resp: CTAResponse) => T[] | PromiseLike<T[]>);
+export type ServicePlucker<T = any> = ((resp: BustimeResponse) => T[] | PromiseLike<T[]>);
 export type ServiceFormatter<T = any, U = any> = ((plucked: T[]) => U[] | PromiseLike<U[]>);
 export type ServiceCatcher = ((reason: any) => void | PromiseLike<void>);
 
@@ -21,6 +21,12 @@ const baseUrl: string = `${process.env.REACT_APP_API_BASE_URL}`;
 
 const defaultCatcher: ServiceCatcher = error => console.error({ error });
 
+const respChecker = (ctar: CTAResponse) => {
+  const btr: BustimeResponse = ctar['bustime-response'] ?? {};
+  if (btr.error) throw new Error(JSON.stringify(btr.error));
+  return btr;
+};
+
 export function getData(options: ServiceOptions) {
   const { resource, params, plucker, formatter } = options;
   const catcher = options?.catcher ?? defaultCatcher;
@@ -29,14 +35,15 @@ export function getData(options: ServiceOptions) {
   Object.entries({ ...params }).forEach(([k, v]) => endpoint.searchParams.append(k, `${v}`));
   return fetch(endpoint.href, requestOptions)
     .then(response => response.json() as CTAResponse)
+    .then(respChecker)
     .then(plucker) //.then(plucked => { console.log({ plucked }); return plucked; })
     .then(formatter) //.then(fmtd => { console.log({ fmtd }); return fmtd; })
     .catch(catcher);
 };
 
 const makePlucker = <T>(key: keyof BustimeResponse) => {
-  return (response: CTAResponse) => {
-    const prop = { [key]: [], ...(response['bustime-response']) }[key];
+  return (btr: BustimeResponse) => {
+    const prop = btr[key];
     return (prop ?? []) as unknown as T[];
   };
 };

@@ -69,10 +69,13 @@ export class Pattern {
   get points() { return this.pt.sort(({ sequence: a }, { sequence: b }) => a - b); }
   get waypoints() { return this.points.filter(p => p.pointType === 'W'); }
   get stops() { return this.points.filter(p => p.pointType === 'S'); }
-  getStopsAfter(sequence: number) {
-    return this.stops.filter(p => p.sequence > sequence);
-  }
-  getSubRouteStops(start: number, end: number) {
-    return this.stops.filter(p => p.sequence >= start).filter(p => p.sequence <= end);
+
+  get firstStop() { return [...this.stops, null].shift(); }
+  get lastStop() { return [null, ...this.stops].pop(); }
+  
+  getStopsAfter(sequence: number) { return this.stops.filter(p => p.sequence > sequence); }
+  
+  getStopsBetween(start: number, end: number) {
+    return this.getStopsAfter(start).filter(p => p.sequence < end);
   }
 }
