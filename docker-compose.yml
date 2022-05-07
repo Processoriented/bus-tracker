@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  react:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/app
+
+  express:
+    build: api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/usr/api
