@@ -1,6 +1,10 @@
 import { readFile } from 'fs';
 import JSZip, { loadAsync } from 'jszip';
+import { camelCase } from 'lodash';
 
+
+const strPatt = /^"(.*?)"$/;
+const nonNums = /\D/g;
 
 async function unzip(filename: string) {
   const reader = async (r: JSZip) => r.file(filename)?.async('string');
@@ -8,12 +12,13 @@ async function unzip(filename: string) {
     const toSplit = `${fileString ?? ''}`;
     const sub = toSplit.split(/\r\n/);
     const first = sub.shift();
-    const keys = `${first ?? ''}`.split(',');
-    return sub.filter(row => row.trim() !== '')
-      .map((row) => row.split(',').reduce((p, v, i) => ({ ...p, [keys[i]]: v }), {}))
+    const keys = `${first ?? ''}`.split(',').map(camelCase);
+    return sub.filter(row => row.trim() !== '').map((row) => row.split(',')
+      .map(v => strPatt.test(v) ? v.replace(strPatt, '$1') : (nonNums.test(v) ? v : parseInt(v)))
+      .reduce((p, v, i) => ({ ...p, [keys[i]]: v }), {}))
   };  
   const promise = new Promise((resolve) => {
-    readFile('/Users/vincent/Downloads/google_transit.zip', (err, data) => {
+    readFile('/usr/api/src/static/google_transit.zip', (err, data) => {
       if (err) throw err;
       loadAsync(data)
         .then(reader)
@@ -24,8 +29,4 @@ async function unzip(filename: string) {
   return await promise;
 }
 
-const main = async() => {
-  unzip('calendar_dates.txt').then(console.log);
-};
-
-main();
+export { unzip };

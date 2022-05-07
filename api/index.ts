@@ -3,6 +3,8 @@ import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { config } from 'dotenv';
 import cors from 'cors';
 
+import { unzip } from './src/util';
+
 
 config();
 const BASE_URL = process.env.CTA_API_URL;
@@ -39,5 +41,12 @@ const hpmOptions: Options = {
 const hpm = createProxyMiddleware(hpmOptions);
 
 app.get('/api/*', hpm);
+
+app.get('/static/:file', (req, res, next) => {
+  unzip(`${req.params.file}.txt`)
+    .then(JSON.stringify)
+    .then(d => res.status(200).send(d))
+    .catch(err => res.status(500).send(err));
+});
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
