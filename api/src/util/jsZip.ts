@@ -1,6 +1,7 @@
 import { readFile } from 'fs';
 import JSZip, { loadAsync } from 'jszip';
 import { camelCase } from 'lodash';
+import { FILE_MODEL_MAP } from '../models';
 
 
 const strPatt = /^"(.*?)"$/;
@@ -13,9 +14,12 @@ async function unzip(filename: string) {
     const sub = toSplit.split(/\r\n/);
     const first = sub.shift();
     const keys = `${first ?? ''}`.split(',').map(camelCase);
-    return sub.filter(row => row.trim() !== '').map((row) => row.split(',')
+    const makeDfltObj = (row: string) => row
+      .split(',')
       .map(v => strPatt.test(v) ? v.replace(strPatt, '$1') : (nonNums.test(v) ? v : parseInt(v)))
-      .reduce((p, v, i) => ({ ...p, [keys[i]]: v }), {}))
+      .reduce((p, v, i) => ({ ...p, [keys[i]]: v }), {});
+    const makeObj = FILE_MODEL_MAP.get(filename) ?? makeDfltObj;
+    return sub.filter(row => row.trim() !== '').map(makeObj);
   };  
   const promise = new Promise((resolve) => {
     readFile('/usr/api/src/static/google_transit.zip', (err, data) => {
