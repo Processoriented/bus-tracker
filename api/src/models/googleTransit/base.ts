@@ -52,6 +52,12 @@ export class GTBase {
 
   static formatInt = formatInt;
 
+  static formatQuoted = (text: string) => {
+    const patt = /^"(.*?)"$/;
+    if (!patt.test(text)) return text;
+    return text.replace(patt, '$1');
+  }
+
   static formatDate = (text: string) => {
     const patt = /^(\d{4})(\d{2})(\d{2})$/;
     if (!patt.test(text)) return new Date(1989, 8, 30, 1, 11);
