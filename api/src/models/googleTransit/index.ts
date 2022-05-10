@@ -5,3 +5,4 @@ export * from './calendarDates';
 export * from './frequencies';
 export * from './route';
 export * from './shape';
+export * from './stopTime';
