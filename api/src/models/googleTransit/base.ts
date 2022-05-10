@@ -52,6 +52,11 @@ export class GTBase {
 
   static formatInt = formatInt;
 
+  static formatFloat = (text: string) => {
+    const patt = /^(\d+?)$|^(\d+?)(\.)(\d*?)$|^(\d*?)(\.)(\d+?)$/;
+    return (patt.test(text)) ? parseFloat(text) : -1.0;
+  };
+
   static formatQuoted = (text: string) => {
     const patt = /^"(.*?)"$/;
     if (!patt.test(text)) return text;
