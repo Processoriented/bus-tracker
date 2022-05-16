@@ -1,6 +1,8 @@
 import { config } from 'dotenv';
 import { RequestHandler } from 'express';
-import { ConnectionConfig, createConnection, format } from 'mysql';
+import { camelCase } from 'lodash';
+import { ConnectionConfig, createConnection } from 'mysql';
+import { resourceToSQLQuery } from './gtQueries';
 
 
 const raw = { host: '', port: '', user: '', password: '', database: '' };
@@ -20,25 +22,15 @@ const mkConfig = (): ConnectionConfig => {
 
 export const connection = createConnection(mkConfig());
 
-const resourceToSQLQuery: { [key: string]: ((qs: any) => string) } = {
-  agency: (() => 'SELECT * FROM `agency`'),
-  routes: ((qs) => {
-    const values = !qs?.route ? [] : Array.isArray(qs.route) ? qs.route : `${qs.route}`.split(',');
-    const base = 'SELECT * FROM `routes`';
-    if (!values.length) return base;
-    const questionMarks = Array(values.length).fill('?').join(', ');
-    return format(`${base} WHERE route_id IN (${questionMarks})`, values);
-    }),
-  unknown: (() => 'SELECT "Unknown Resource" AS resp'),
-};
-
 export const getGTData: RequestHandler = (req, res, next) => {
   const resource: string = req.params?.resource ?? 'unknown';
   const params = req.query;
   const sql = resourceToSQLQuery[resource](params);
 
   connection.query(sql, (err, rows, fields) => {
-    if (err) return next(err);
-    res.status(200).send({ sql, rows, fields });
+    if (err) return next(sql);
+    const data = rows.map((row: any) => Object.entries(row).reduce(
+      (p, [k, v]) => ({ ...p, [camelCase(k)]: v }), {}));
+    res.status(200).send({ sql, data });
   });
 };

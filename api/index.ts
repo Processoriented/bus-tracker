@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import cors from 'cors';
 
 import { unzip } from './src/util';
-import { getGTData } from './src/util/gtData';
+import { getGTData } from './src/gtData';
 
 
 config();
