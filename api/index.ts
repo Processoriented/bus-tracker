@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import cors from 'cors';
 
 import { unzip } from './src/util';
+import { getGTData } from './src/util/gtData';
 
 
 config();
@@ -29,7 +30,7 @@ const hpmOptions: Options = {
   target: `${BASE_URL}`,
   changeOrigin: true,
   pathRewrite: (path, req: Request) => {
-    let newPath = path.replace(/^\/api/, '');
+    let newPath = path.replace(/^\/cta/, '');
     const endpoint = newPath.split('?')[0];
     const query = Object.entries(req.query)
       .reduce((p, [k, v]) => ([...p, `${k}=${v}`]), [] as Array<string>);
@@ -40,13 +41,15 @@ const hpmOptions: Options = {
 
 const hpm = createProxyMiddleware(hpmOptions);
 
-app.get('/api/*', hpm);
+app.get('/cta/*', hpm);
 
 app.get('/static/:file', (req, res, next) => {
   unzip(`${req.params.file}.txt`)
     .then(JSON.stringify)
     .then(d => res.status(200).send(d))
-    .catch(err => res.status(500).send(err));
+    .catch(next);
 });
+
+app.get('/api/:resource', getGTData);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));

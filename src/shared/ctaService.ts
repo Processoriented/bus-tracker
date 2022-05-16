@@ -31,7 +31,7 @@ export function getData(options: ServiceOptions) {
   const { resource, params, plucker, formatter } = options;
   const catcher = options?.catcher ?? defaultCatcher;
   const requestOptions = { method: 'GET' };
-  const endpoint = new URL(`${baseUrl}/${resource}`);
+  const endpoint = new URL(`${baseUrl}cta/${resource}`);
   Object.entries({ ...params }).forEach(([k, v]) => endpoint.searchParams.append(k, `${v}`));
   return fetch(endpoint.href, requestOptions)
     .then(response => response.json() as CTAResponse)
