@@ -1,10 +1,10 @@
 import express, { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
-import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { config } from 'dotenv';
 import cors from 'cors';
 
 import { unzip } from './src/util';
 import { getGTData } from './src/gtData';
+import { getProxyMiddleware } from './src/proxyMiddleware';
 
 
 config();
@@ -26,20 +26,7 @@ app.get('/', (req: Request, res: Response) => {
   res.send(`Hello ${req?.query?.name ?? 'World'}.`);
 });
 
-const hpmOptions: Options = {
-  target: `${BASE_URL}`,
-  changeOrigin: true,
-  pathRewrite: (path, req: Request) => {
-    let newPath = path.replace(/^\/cta/, '');
-    const endpoint = newPath.split('?')[0];
-    const query = Object.entries(req.query)
-      .reduce((p, [k, v]) => ([...p, `${k}=${v}`]), [] as Array<string>);
-    const qs = ['format=json', `key=${CTA_KEY}`, ...(query)].join('&');
-    return [endpoint, qs].join('?');
-  },
-};
-
-const hpm = createProxyMiddleware(hpmOptions);
+const hpm = getProxyMiddleware(BASE_URL, CTA_KEY);
 
 app.get('/cta/*', hpm);
 
