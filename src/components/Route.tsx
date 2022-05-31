@@ -1,6 +1,6 @@
-import React, { ChangeEvent, ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 import { Pattern, Point, Prediction } from '../models';
-import { CTAParams, getPatterns, getPredictions } from '../shared/ctaService';
+import { APIParams, getPatterns, getPredictions } from '../shared/ctaService';
 
 export interface RouteProps {
   [key: string]: any;
@@ -16,14 +16,14 @@ export default function Route(props: RouteProps) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
 
   useEffect(() => {
-    const params: CTAParams = { rt };
+    const params: APIParams = { rt };
     getPatterns({ params }).then((next) => {
       setPatterns(next);
       setMessage(`Found ${next.length} patterns`);
     });
   }, [rt]);
 
-  const handleDirChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e: ChangeEvent<HTMLSelectElement>) => {
+  const handleDirChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const value = e.target.value;
     const nextPatt = patterns.find(({ patternId }) => patternId === parseInt(value, 10)) ?? null;
     setSelectedPattern(nextPatt);
@@ -31,7 +31,7 @@ export default function Route(props: RouteProps) {
     setEnd(null);
   }, [patterns]);
 
-  const handleStartChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e: ChangeEvent<HTMLSelectElement>) => {
+  const handleStartChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const value = e.target.value;
     const stops = selectedPattern?.stops ?? [];
     const nextPoint = stops.find(({ stopId }) => stopId === value) ?? null;
@@ -39,7 +39,7 @@ export default function Route(props: RouteProps) {
     setEnd(null);
   }, [selectedPattern]);
 
-  const handleEndChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e: ChangeEvent<HTMLSelectElement>) => {
+  const handleEndChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const value = e.target.value;
     const stops = selectedPattern?.stops ?? [];
     const nextPoint = stops.find(({ stopId }) => stopId === value) ?? null;
@@ -49,7 +49,7 @@ export default function Route(props: RouteProps) {
   useEffect(() => {
     if (!(selectedPattern && start && end)) return;
     const stpid = [start.stopId, end.stopId].join(',');
-    const params: CTAParams = { stpid };
+    const params: APIParams = { stpid };
     getPredictions({ params }).then(setPredictions);
   }, [selectedPattern, start, end]);
 

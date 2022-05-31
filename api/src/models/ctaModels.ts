@@ -57,7 +57,7 @@ export class Prediction {
   zone: string;
 
   constructor(prd: Partial<Prediction> = {}) {
-    this.tmstmp = ctaTsToDate(prd?.tmstmp ?? '');
+    this.tmstmp = ctaTsToDate(`${prd?.tmstmp ?? ''}`);
     this.typ = prd?.typ ?? 'A';
     this.stpnm = prd?.stpnm ?? 'unknown';
     this.stpid = prd?.stpid ?? '-1';
@@ -67,7 +67,7 @@ export class Prediction {
     this.rtdd = prd?.rtdd ?? 'unknown';
     this.rtdir = prd?.rtdir ?? 'unknown';
     this.des = prd?.des ?? 'unknown';
-    this.prdtm = prd?.prdtm ?? '19890930 01:11';
+    this.prdtm = ctaTsToDate(`${prd?.prdtm ?? ''}`);
     this.tablockid = prd?.tablockid ?? '';
     this.tatripid = prd?.tatripid ?? '';
     this.dly = prd?.dly ?? false;

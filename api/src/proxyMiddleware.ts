@@ -28,8 +28,17 @@ const fallback: ResourceFn = (obj) => {
   }, mtRtn);
 };
 
-const getpatterns: ResourceFn<Pattern> = (obj) => ({ ...mtRtn, data: obj.ptr.map(o => new Pattern(o)) });
-const getpredictions: ResourceFn<Prediction> = (obj) => ({ ...mtRtn, data: obj.prd.map(o => new Prediction(o)) });
+const getpatterns: ResourceFn<Pattern> = (obj) => {
+  const rtn = fallback(obj);
+  const data = [...(rtn?.data ?? [])].map(p => new Pattern(p));
+  return { ...rtn, data };
+};
+
+const getpredictions: ResourceFn<Prediction> = (obj) => {
+  const rtn = fallback(obj);
+  const data = [...(rtn?.data ?? [])].map(p => new Prediction(p));
+  return { ...rtn, data };
+};
 
 const resourceFns: { [resourceName: string]: ResourceFn } = {
   fallback,
