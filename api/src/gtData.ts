@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { ErrorRequestHandler, RequestHandler } from 'express';
 import { camelCase } from 'lodash';
-import { ConnectionConfig, createConnection } from 'mysql';
+import { ConnectionConfig, createPool } from 'mysql';
 import { resourceToSQLQuery } from './gtQueries';
 import { NotFoundError, SQLError } from './util/appErrors';
 
@@ -21,7 +21,7 @@ const mkConfig = (): ConnectionConfig => {
   return { ...raw, port } as ConnectionConfig;
 };
 
-export const connection = createConnection(mkConfig());
+export const pool = createPool(mkConfig());
 
 export const gtDataErrorHandler: ErrorRequestHandler = (err, _, res, next) => {
   if (err instanceof NotFoundError) {
@@ -45,11 +45,11 @@ export const getGTData: RequestHandler = (req, res, next) => {
   const resourceToSqlFn = resourceToSQLQuery[resource] ?? resourceToSQLQuery.unknown;
   const { sql, page, rowsPerPage, totalSql } = resourceToSqlFn(params);
 
-  connection.query(sql, (err, rows, _fields) => {
+  pool.query(sql, (err, rows, _fields) => {
     if (err) return gtDataErrorHandler(new SQLError(err), req, res, next);
     const data = rows.map((row: any) => Object.entries(row).reduce(
       (p, [k, v]) => ({ ...p, [camelCase(k)]: v }), {}));
-    connection.query(totalSql, (err, rows, _fields) => {
+    pool.query(totalSql, (err, rows, _fields) => {
       if (err) return gtDataErrorHandler(new SQLError(err), req, res, next);
       const base = { sql, page, rowsPerPage };
       const payload = Array.isArray(rows) && rows.length ? Object.entries(rows[0])
