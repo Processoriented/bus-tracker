@@ -3,7 +3,7 @@
 
 export type PointType = 'S'|'W';
 
-export interface IPoint {
+export class Point {
   seq: number;
   lat: number;
   lon: number;
@@ -11,18 +11,8 @@ export interface IPoint {
   stpid: string;
   stpnm: string;
   pdist: number;
-}
 
-export class Point {
-  private seq: number;
-  private lat: number;
-  private lon: number;
-  private typ: PointType;
-  private stpid: string;
-  private stpnm: string;
-  private pdist: number;
-
-  constructor(p: Partial<IPoint> = {}) {
+  constructor(p: Partial<Point> = {}) {
     this.seq = p?.seq ?? -1;
     this.lat = p?.lat ?? -1;
     this.lon = p?.lon ?? -1;
@@ -43,20 +33,13 @@ export class Point {
   get distance() { return this.pdist; }
 }
 
-export interface IPattern {
+export class Pattern {
   pid: number;
   ln: number;
   rtdir: string;
-  pt: IPoint[];
-};
+  pt: Point[];
 
-export class Pattern {
-  private pid: number;
-  private ln: number;
-  private rtdir: string;
-  private pt: Point[];
-
-  constructor(ptr: Partial<IPattern> = {}) {
+  constructor(ptr: Partial<Pattern> = {}) {
     this.pid = ptr?.pid ?? -1;
     this.ln = ptr?.ln ?? -1;
     this.rtdir = ptr?.rtdir ?? '';

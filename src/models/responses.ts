@@ -1,13 +1,10 @@
-import { IPattern } from './patterns';
-import { IPrediction } from './prediction';
 
 
-export interface BustimeResponse {
+export type APIResponse<T = any> = {
   error?: any,
-  prd?: IPrediction[],
-  ptr?: IPattern[],
-}
-
-export interface CTAResponse {
-  'bustime-response'?: BustimeResponse,
-}
+  sql?: string,
+  rowsPerPage?: number,
+  totalRows?: number,
+  errata?: any,
+  data?: T[] | Partial<T>[],
+};
