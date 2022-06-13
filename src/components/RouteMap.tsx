@@ -8,8 +8,6 @@ import { Marker } from './Marker';
 
 interface RouteMapProps {
   style: { [key: string]: string };
-  center: google.maps.LatLngLiteral;
-  zoom: number;
   children?: React.ReactChild | React.ReactChild[];
 }
 
