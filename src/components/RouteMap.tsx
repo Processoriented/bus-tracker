@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Status, Wrapper } from '@googlemaps/react-wrapper';
 import { GTRoute } from '../models';
-import { getGTRoutes } from '../shared/ctaService';
+import { getGTRoutes, getGTShapes } from '../shared/ctaService';
 import { useNavGeo } from '../shared/hooks';
 import { Marker } from './Marker';
 
@@ -15,7 +15,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({ style }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map>();
   const { coords } = useNavGeo();
-  const [routes, setRoutes] = useState<GTRoute[]>([]);
+  const [_routes, setRoutes] = useState<GTRoute[]>([]);
   const [center, setCenter] = useState<google.maps.LatLngLiteral>({ lat: 0, lng: 0});
   const [zoom] = useState<number>(14);
 
@@ -40,7 +40,22 @@ export const RouteMap: React.FC<RouteMapProps> = ({ style }) => {
     getGTRoutes({}).then(setRoutes);
   }, []);
 
-  useEffect(() => console.dir(routes), [routes]);
+  useEffect(() => {
+    if (typeof map?.getBounds !== 'function') return;
+    const bounds = map.getBounds();
+    const ne = bounds?.getNorthEast();
+    const sw = bounds?.getSouthWest();
+    if (typeof ne?.lat !== 'function') return;
+    // const [lats, lngs] = [ne, sw].reduce((p, d) => {}, []);
+    const maxLat = `${ne?.lat() ?? ''}`;
+    const minLat = `${sw?.lat() ?? ''}`;
+    const maxLng = `${ne?.lng() ?? ''}`;
+    const minLng = `${sw?.lng() ?? ''}`;
+    if ([maxLat, maxLng, minLat, minLng].some(x => '')) return;
+    const params = { maxLat, maxLng, minLat, minLng };
+    console.dir(params);
+    getGTShapes({ params }).then(console.log);
+  }, [map]);
 
   return (
     <Wrapper apiKey={`${process.env.REACT_APP_GCP_KEY}`} render={render}>

@@ -1,9 +1,9 @@
-import { Prediction, Pattern, APIResponse, GTRoute } from '../models';
+import { Prediction, Pattern, APIResponse, GTRoute, GTShapePT } from '../models';
 
 
-export type ServicePlucker<T = any> = ((obj: APIResponse<T>) => T[] | Partial<T>[] | PromiseLike<Partial<T>[]>);
-export type ServiceFormatter<T = any> = ((plucked: T[] | Partial<T>[]) => T[] | PromiseLike<T[]>);
-export type ServiceCatcher = ((reason: any) => void | PromiseLike<void>);
+export type ServicePlucker<T = any> = (_: APIResponse<T>) => T[] | Partial<T>[] | PromiseLike<Partial<T>[]>;
+export type ServiceFormatter<T = any> = ((_: T[] | Partial<T>[]) => T[] | PromiseLike<T[]>);
+export type ServiceCatcher = ((_: any) => void | PromiseLike<void>);
 
 export interface APIParams {
   [k: string]: string|number;
@@ -74,3 +74,12 @@ export const getGTRoutes = (options: Partial<ServiceOptions<GTRoute>>) => {
   const opts: ServiceOptions<GTRoute> = { ...options, service: 'api', resource, params, plucker, formatter };
   return getData(opts) as Promise<GTRoute[]>;
 };
+
+export const getGTShapes = (options: Partial<ServiceOptions<GTShapePT>>) => {
+  const resource = 'shapes';
+  const params: APIParams = { ...(options?.params) };
+  const plucker: ServicePlucker<GTShapePT> = makePlucker();
+  const formatter: ServiceFormatter<GTShapePT> = (data) => ([...(data ?? [])].map(r => new GTShapePT(r)));
+  const opts: ServiceOptions<GTShapePT> = { ...options, service: 'api', resource, params, plucker, formatter };
+  return getData(opts) as Promise<GTShapePT[]>;
+}

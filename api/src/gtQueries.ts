@@ -97,7 +97,7 @@ const unknown: SQLMaker = (qs) => {
 }
 
 const force: SQLMaker = (qs) => {
-  const from = 'FROM `routesx`';
+  const from = 'FROM `routes`';
   const values = !qs?.route ? [] : Array.isArray(qs.route) ? qs.route : `${qs.route}`.split(',');
   const where = values.length ? `WHERE route_id IN (${mkQuestMarks(values.length)})` : undefined;
   const { sql: limit, page, rowsPerPage } = parseLimitParams(qs);
@@ -106,6 +106,37 @@ const force: SQLMaker = (qs) => {
   return { sql, page, rowsPerPage, totalSql };
 };
 
+const inBoundsSubQuery = () => {
+  const select = 'SELECT DISTINCT b.shape_id';
+  const from = 'FROM `shapes` b';
+  const checks = ['lat', 'lon']
+    .map(d => `b.shape_pt_${d}`)
+    .map(f => ([`${f} < ?`, `${f} > ?`]))
+    .flat(1)
+    .join(' AND ');
+  const where = `WHERE ${checks}`;
+  return formatFromClauses({ select, from, where });
+};
+
+const shapes: SQLMaker = (qs) => {
+  const values = [qs?.maxLat, qs?.minLat, qs?.maxLng, qs?.minLng];
+  if (!values.every(val => !!val)) throw new Error('Missing params');
+  const from = 'FROM `shapes`';
+  const where = `WHERE shape_id IN (${inBoundsSubQuery()})`;
+  const { sql: limit, page, rowsPerPage } = parseLimitParams(qs);
+  const sql = formatFromClauses({ from, where, limit, values });
+  const totalSql = formatFromClauses({ select: totalSelect, from, where, values });
+  return { sql, page, rowsPerPage, totalSql };
+}
+
 export type SQLDict = { [key: string]: SQLMaker };
 
-export const resourceToSQLQuery: SQLDict = { agency, calendar, calendardates, force, routes, unknown };
+export const resourceToSQLQuery: SQLDict = {
+  agency,
+  calendar,
+  calendardates,
+  force,
+  routes,
+  shapes,
+  unknown,
+};

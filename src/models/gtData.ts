@@ -42,3 +42,19 @@ export class GTRoute extends GTBase {
     Object.assign(this, obj);
   }
 };
+
+export class GTShapePT extends GTBase {
+  shapeId: string;
+  shapePtLat?: number;
+  shapePtLon?: number;
+  shapePtSequence?: number;
+  shapeDistTraveled?: number;
+
+  constructor(obj: Partial<GTShapePT> = {}) {
+    super();
+    const { shapeId } = { shapeId: null, ...obj };
+    if (!shapeId) throw new TypeError('shapeId is required');
+    this.shapeId = shapeId;
+    Object.assign(this, obj);
+  }
+}

@@ -15,7 +15,6 @@ export function useNavGeo() {
     if (!available) return;
     navigator.geolocation.getCurrentPosition((position) => {
       const { coords: c } = position;
-      console.dir(c);
       setCoords(c);
     });
   }, [available]);
