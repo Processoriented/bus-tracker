@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Status, Wrapper } from '@googlemaps/react-wrapper';
-import { GTRoute } from '../models';
+import { GTRoute, GTShapes } from '../models';
 import { getGTRoutes, getGTShapes } from '../shared/ctaService';
 import { useNavGeo } from '../shared/hooks';
 import { Marker } from './Marker';
@@ -40,22 +40,22 @@ export const RouteMap: React.FC<RouteMapProps> = ({ style }) => {
     getGTRoutes({}).then(setRoutes);
   }, []);
 
-  useEffect(() => {
-    if (typeof map?.getBounds !== 'function') return;
-    const bounds = map.getBounds();
-    const ne = bounds?.getNorthEast();
-    const sw = bounds?.getSouthWest();
-    if (typeof ne?.lat !== 'function') return;
-    // const [lats, lngs] = [ne, sw].reduce((p, d) => {}, []);
-    const maxLat = `${ne?.lat() ?? ''}`;
-    const minLat = `${sw?.lat() ?? ''}`;
-    const maxLng = `${ne?.lng() ?? ''}`;
-    const minLng = `${sw?.lng() ?? ''}`;
-    if ([maxLat, maxLng, minLat, minLng].some(x => '')) return;
-    const params = { maxLat, maxLng, minLat, minLng };
-    console.dir(params);
-    getGTShapes({ params }).then(console.log);
-  }, [map]);
+  // useEffect(() => {
+  //   if (typeof map === 'undefined') return;
+  //   const bounds = map.getBounds();
+  //   if (typeof bounds === 'undefined') return;
+  //   const ne = bounds.getNorthEast();
+  //   if (typeof ne === 'undefined') return;
+  //   const sw = bounds?.getSouthWest();
+  //   if (typeof sw === 'undefined') return;
+  //   const maxLat = `${ne?.lat() ?? ''}`;
+  //   const minLat = `${sw?.lat() ?? ''}`;
+  //   const maxLng = `${ne?.lng() ?? ''}`;
+  //   const minLng = `${sw?.lng() ?? ''}`;
+  //   const params = { maxLat, maxLng, minLat, minLng };
+  //   console.dir(params);
+  //   getGTShapes({ params }).then(arr => new GTShapes(arr)).then(console.dir);
+  // }, [map]);
 
   return (
     <Wrapper apiKey={`${process.env.REACT_APP_GCP_KEY}`} render={render}>

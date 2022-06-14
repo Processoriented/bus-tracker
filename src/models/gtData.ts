@@ -58,3 +58,23 @@ export class GTShapePT extends GTBase {
     Object.assign(this, obj);
   }
 }
+
+export class GTShapes extends GTBase {
+  [shapeId: string]: GTShapePT[];
+
+  constructor(pts: Array<GTShapePT | Partial<GTShapePT>> = []) {
+    super();
+    const sorter: ((a: GTShapePT, b: GTShapePT) => number) = (
+      { shapePtSequence: a },
+      { shapePtSequence: b }
+    ) => {
+      if (typeof a === 'undefined' || typeof b === 'undefined') return 0;
+      return a - b;
+    };
+    pts.map(pt => pt instanceof GTShapePT ? pt : new GTShapePT(pt)).forEach(pt => {
+      const shapeArr = this[pt.shapeId] ?? [];
+      shapeArr.push(pt);
+      this[pt.shapeId] = shapeArr.sort(sorter);
+    });
+  }
+}
