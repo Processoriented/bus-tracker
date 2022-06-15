@@ -127,7 +127,18 @@ const shapes: SQLMaker = (qs) => {
   const sql = formatFromClauses({ from, where, limit, values });
   const totalSql = formatFromClauses({ select: totalSelect, from, where, values });
   return { sql, page, rowsPerPage, totalSql };
-}
+};
+
+const stops: SQLMaker = (qs) => {
+  const values = [qs?.minLat, qs?.maxLat, qs?.minLng, qs?.maxLng];
+  if (!values.every(val => !!val)) throw new Error('Missing params');
+  const from = 'FROM `stops`';
+  const where = 'WHERE stop_lat BETWEEN ? AND ? AND stop_lon BETWEEN ? AND ?';
+  const { sql: limit, page, rowsPerPage } = parseLimitParams(qs);
+  const sql = formatFromClauses({ from, where, limit, values });
+  const totalSql = formatFromClauses({ select: totalSelect, from, where, values });
+  return { sql, page, rowsPerPage, totalSql };
+};
 
 export type SQLDict = { [key: string]: SQLMaker };
 
@@ -138,5 +149,6 @@ export const resourceToSQLQuery: SQLDict = {
   force,
   routes,
   shapes,
+  stops,
   unknown,
 };
