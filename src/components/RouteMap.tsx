@@ -1,5 +1,5 @@
 import { Status, Wrapper } from '@googlemaps/react-wrapper';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { GTStop } from '../models';
 import { getGTStops } from '../shared/ctaService';
@@ -9,7 +9,7 @@ import { Marker } from './Marker';
 
 interface RouteMapProps {
   style: { [key: string]: string };
-  children?: React.ReactChild | React.ReactChild[];
+  children?: React.ReactNode | React.ReactNode[];
 }
 
 export const RouteMap: React.FC<RouteMapProps> = ({ style }) => {
