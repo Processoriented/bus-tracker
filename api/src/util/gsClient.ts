@@ -1,4 +1,4 @@
-import { Client, DirectionsRequest, LatLng, TravelMode } from '@googlemaps/google-maps-services-js';
+import { Client, LatLng, TravelMode } from '@googlemaps/google-maps-services-js';
 import { config } from 'dotenv';
 
 
@@ -25,5 +25,5 @@ export const getDirs = (origin: LatLng, destination: LatLng) => {
   const params = { key, origin, destination, mode };
   return client.directions({ params })
     .then(({ data }) => data)
-    .then(({ routes }) => { console.dir(routes); return routes; })
+    .then(({ routes }) => routes);
 }
