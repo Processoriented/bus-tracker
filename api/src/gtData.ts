@@ -1,9 +1,11 @@
+import { LatLng } from '@googlemaps/google-maps-services-js';
 import { config } from 'dotenv';
 import { ErrorRequestHandler, RequestHandler } from 'express';
 import { camelCase } from 'lodash';
 import { ConnectionConfig, createPool } from 'mysql';
 import { resourceToSQLQuery } from './gtQueries';
 import { NotFoundError, SQLError } from './util/appErrors';
+import { getDirs, getLatLng } from './util/gsClient';
 
 
 const raw = { host: '', port: '', user: '', password: '', database: '' };
@@ -58,3 +60,12 @@ export const getGTData: RequestHandler = (req, res, next) => {
     });
   });
 };
+
+export const getGSCData: RequestHandler = async (req, res, next) => {
+  const start = req.body.start;
+  const origin: LatLng = await getLatLng(start).then((ids) => ids[0]);
+  const end = req.body.end;
+  const destination: LatLng = await getLatLng(end).then((ids) => ids[0]);
+  getDirs(origin, destination)
+    .then((routes) => res.status(200).send({ origin, destination, routes }));
+}
